@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: neural-babel
+  namespace: default
+  labels:
+    app: neural-babel
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: neural-babel
+  template:
+    metadata:
+      labels:
+        app: neural-babel
+    spec:
+      containers:
+      - name: neural-babel
+        image: ${REGISTRY_URL}/neural-babel:${IMAGE_TAG}
+        imagePullPolicy: Always
+        env:
+        - name: ASR_SERVICE_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: neural-babel-config
+              key: asr_service_name
+        - name: ASR_SERVICE_NAMESPACE
+          valueFrom:
+            configMapKeyRef:
+              name: neural-babel-config
+              key: asr_service_namespace
+        - name: TRANSLATION_SERVICE_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: neural-babel-config
+              key: translation_service_name
+        - name: TRANSLATION_SERVICE_NAMESPACE
+          valueFrom:
+            configMapKeyRef:
+              name: neural-babel-config
+              key: translation_service_namespace
+        - name: TTS_SERVICE_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: neural-babel-config
+              key: tts_service_name
+        - name: TTS_SERVICE_NAMESPACE
+          valueFrom:
+            configMapKeyRef:
+              name: neural-babel-config
+              key: tts_service_namespace
+        - name: DEFAULT_SOURCE_LANG
+          valueFrom:
+            configMapKeyRef:
+              name: neural-babel-config
+              key: default_source_lang
+        - name: DEFAULT_TARGET_LANG
+          valueFrom:
+            configMapKeyRef:
+              name: neural-babel-config
+              key: default_target_lang
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: neural-babel-config
+              key: log_level
+        ports:
+        - containerPort: 8000
+          name: http
+        resources:
+          limits:
+            cpu: "1"
+            memory: 2Gi
+          requests:
+            cpu: "500m"
+            memory: 1Gi
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /live
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 20
+        volumeMounts:
+        - name: config-volume
+          mountPath: /app/config
+      volumes:
+      - name: config-volume
+        configMap:
+          name: neural-babel-config 

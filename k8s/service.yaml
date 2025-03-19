@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: neural-babel
+  namespace: default
+  labels:
+    app: neural-babel
+spec:
+  selector:
+    app: neural-babel
+  ports:
+  - port: 80
+    targetPort: 8000
+    name: http
+  type: ClusterIP 

@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: neural-babel-config
+  namespace: default
+data:
+  asr_service_name: "kube-whisperer"
+  asr_service_namespace: "default"
+  translation_service_name: "lexi-shift"
+  translation_service_namespace: "default"
+  tts_service_name: "vox-raga"
+  tts_service_namespace: "default"
+  default_source_lang: "en"
+  default_target_lang: "fr"
+  log_level: "INFO"
+  supported_language_pairs: |
+    en-fr
+    en-de
+    en-hi
+    fr-en
+    de-en
+    hi-en 
