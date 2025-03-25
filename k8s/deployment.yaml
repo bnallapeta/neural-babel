@@ -17,8 +17,8 @@ spec:
     spec:
       containers:
       - name: neural-babel
-        image: ${REGISTRY_URL}/neural-babel:latest
-        imagePullPolicy: Always
+        image: bnracr.azurecr.io/neural-babel:0.0.1 
+        imagePullPolicy: IfNotPresent
         env:
         - name: ASR_SERVICE_ENDPOINT
           valueFrom:
@@ -75,6 +75,8 @@ spec:
         volumeMounts:
         - name: config-volume
           mountPath: /app/config
+      imagePullSecrets:
+      - name: acr-secret
       volumes:
       - name: config-volume
         configMap:
