@@ -15,10 +15,11 @@ NeuralBabel is a comprehensive speech-to-speech translation system that integrat
 
 ```
 neural-babel/
-├── audio/                  # Audio files used for testing
 ├── k8s/                    # Kubernetes deployment configurations
 ├── scripts/                # Scripts for various operations
 │   └── testing/            # Scripts for testing
+│       ├── audio/          # Audio files used for testing
+│       └── scripts/        # Scripts for testing
 ├── src/                    # Source code
 │   ├── api/                # API endpoints and models
 │   ├── clients/            # Service clients
@@ -234,7 +235,7 @@ curl -s $SERVICE_URL/languages
 
 # Translating an audio file
 curl -X POST \
-  -F "audio=@audio/sample1.wav" \
+  -F "audio=@scripts/testing/audio/sample1.wav" \
   -F "source_lang=en" \
   -F "target_lang=fr" \
   -F "audio_format=wav" \
