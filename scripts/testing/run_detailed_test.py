@@ -17,7 +17,7 @@ os.makedirs(SCRIPT_DIR, exist_ok=True)
 # Define output locations
 TRANSCRIPTION_FILE = os.path.join(SCRIPT_DIR, "transcription.txt")
 TRANSLATION_FILE = os.path.join(SCRIPT_DIR, "translation.txt")
-TRANSLATED_AUDIO_FILE = os.path.join(PROJECT_ROOT, "audio/translated.wav")
+TRANSLATED_AUDIO_FILE = os.path.join(PROJECT_ROOT, "translated.wav")
 INPUT_AUDIO_FILE = os.path.join(PROJECT_ROOT, "audio/sample1.wav")
 
 # Add parent directory to path to allow imports from src

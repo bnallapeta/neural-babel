@@ -1,7 +1,5 @@
 #!/bin/bash
 
-echo "=== NeuralBabel Manual Pipeline Test ==="
-
 # Get the script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
