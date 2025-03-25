@@ -24,9 +24,13 @@ INPUT_AUDIO_FILE = os.path.join(PROJECT_ROOT, "audio/sample1.wav")
 sys.path.append(PROJECT_ROOT)
 
 # Add environment variables for service endpoints
-os.environ["ASR_SERVICE_ENDPOINT"] = "http://localhost:8666"
-os.environ["TRANSLATION_SERVICE_ENDPOINT"] = "http://localhost:8777"
-os.environ["TTS_SERVICE_ENDPOINT"] = "http://localhost:8888"
+# os.environ["ASR_SERVICE_ENDPOINT"] = "http://localhost:8666"
+# os.environ["TRANSLATION_SERVICE_ENDPOINT"] = "http://localhost:8777"
+# os.environ["TTS_SERVICE_ENDPOINT"] = "http://localhost:8888"
+
+os.environ["ASR_SERVICE_ENDPOINT"] = "http://kube-whisperer.default.74.224.102.71.nip.io"
+os.environ["TRANSLATION_SERVICE_ENDPOINT"] = "http://translation-service.default.74.224.102.71.nip.io"
+os.environ["TTS_SERVICE_ENDPOINT"] = "http://vox-raga.default.74.224.102.71.nip.io"
 
 # Import after setting environment variables
 from src.config import get_settings, get_pipeline_config

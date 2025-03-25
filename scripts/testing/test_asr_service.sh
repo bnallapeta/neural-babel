@@ -24,20 +24,20 @@ curl -v -X POST \
   http://localhost:8666/transcribe \
   -o "$PROJECT_ROOT/json/asr_response1.json"
 
-echo -e "\nTesting with different parameter formats..."
-curl -v -X POST \
-  -F "file=@$PROJECT_ROOT/audio/sample1.wav" \
-  -F "options.language=en" \
-  http://localhost:8666/transcribe \
-  -o "$PROJECT_ROOT/json/asr_response2.json"
+# echo -e "\nTesting with different parameter formats..."
+# curl -v -X POST \
+#   -F "file=@$PROJECT_ROOT/audio/sample1.wav" \
+#   -F "options.language=en" \
+#   http://localhost:8666/transcribe \
+#   -o "$PROJECT_ROOT/json/asr_response2.json"
 
 echo -e "\nASR Response 1 (using 'file' field with 'language' parameter):"
 cat "$PROJECT_ROOT/json/asr_response1.json" | jq 2>/dev/null || cat "$PROJECT_ROOT/json/asr_response1.json"
 
-echo -e "\nASR Response 2 (using 'file' field with options.language):"
-cat "$PROJECT_ROOT/json/asr_response2.json" | jq 2>/dev/null || cat "$PROJECT_ROOT/json/asr_response2.json"
+# echo -e "\nASR Response 2 (using 'file' field with options.language):"
+# cat "$PROJECT_ROOT/json/asr_response2.json" | jq 2>/dev/null || cat "$PROJECT_ROOT/json/asr_response2.json"
 
 # Check with file command to ensure we received proper JSON
 echo -e "\nVerifying response file types:"
 file "$PROJECT_ROOT/json/asr_response1.json"
-file "$PROJECT_ROOT/json/asr_response2.json" 
+# file "$PROJECT_ROOT/json/asr_response2.json" 
