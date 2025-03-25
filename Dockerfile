@@ -1,36 +1,27 @@
 FROM python:3.11-slim
 
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PYTHONPATH=/app
-
-# Create a non-root user
-RUN groupadd -r neuralbabel && \
-    useradd -r -g neuralbabel neuralbabel
-
-# Set working directory
 WORKDIR /app
 
-# Install dependencies
+# Install required system packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libc6-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements and install dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
+# Copy the application code
 COPY . .
 
-# Set ownership to non-root user
-RUN chown -R neuralbabel:neuralbabel /app
+# Set environment variables
+ENV PYTHONPATH=/app \
+    PORT=8000 \
+    LOG_LEVEL=INFO
 
-# Switch to non-root user
-USER neuralbabel
-
-# Expose port
+# Expose the service port
 EXPOSE 8000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
-
-# Run the application
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"] 
+# Run the service
+CMD ["python", "-m", "src.main"] 

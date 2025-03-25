@@ -19,16 +19,19 @@ if [ ! -f "$PROJECT_ROOT/audio/sample1.wav" ]; then
         cp "$PROJECT_ROOT/audio/test_audio.wav" "$PROJECT_ROOT/audio/input.wav"
     else
         echo "No test audio found. Generating one..."
-        python "$PROJECT_ROOT/scripts/util/generate_test_audio.py"
+        "$PROJECT_ROOT/venv/bin/python" "$PROJECT_ROOT/scripts/util/generate_test_audio.py"
         cp "$PROJECT_ROOT/test_audio.wav" "$PROJECT_ROOT/audio/input.wav"
     fi
 fi
 
-# Activate virtual environment
-source "$PROJECT_ROOT/venv/bin/activate"
+# Ensure virtual environment is activated
+if [[ "$VIRTUAL_ENV" == "" ]]; then
+    echo "Virtual environment not activated. Activating..."
+    source "$PROJECT_ROOT/venv/bin/activate"
+fi
 
 # Run the test script
-python "$SCRIPT_DIR/run_detailed_test.py"
+"$PROJECT_ROOT/venv/bin/python" "$SCRIPT_DIR/run_detailed_test.py"
 
 # Play the audio files if possible
 if command -v afplay &> /dev/null; then

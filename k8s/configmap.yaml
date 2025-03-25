@@ -4,12 +4,12 @@ metadata:
   name: neural-babel-config
   namespace: default
 data:
-  asr_service_name: "kube-whisperer"
-  asr_service_namespace: "default"
-  translation_service_name: "lexi-shift"
-  translation_service_namespace: "default"
-  tts_service_name: "vox-raga"
-  tts_service_namespace: "default"
+  # Service endpoints (using KServe InferenceService URLs)
+  asr_service_endpoint: "http://kube-whisperer.default.74.224.102.71.nip.io"
+  translation_service_endpoint: "http://translation-service.default.74.224.102.71.nip.io"
+  tts_service_endpoint: "http://vox-raga.default.74.224.102.71.nip.io"
+  
+  # Default settings
   default_source_lang: "en"
   default_target_lang: "fr"
   log_level: "INFO"

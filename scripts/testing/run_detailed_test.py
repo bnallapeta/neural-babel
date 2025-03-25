@@ -5,6 +5,7 @@ import os
 import json
 import sys
 from typing import Dict, Any, Optional
+from dotenv import load_dotenv
 
 # Get the script directory and project root
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -23,14 +24,23 @@ INPUT_AUDIO_FILE = os.path.join(PROJECT_ROOT, "audio/sample1.wav")
 # Add parent directory to path to allow imports from src
 sys.path.append(PROJECT_ROOT)
 
-# Add environment variables for service endpoints
-# os.environ["ASR_SERVICE_ENDPOINT"] = "http://localhost:8666"
-# os.environ["TRANSLATION_SERVICE_ENDPOINT"] = "http://localhost:8777"
-# os.environ["TTS_SERVICE_ENDPOINT"] = "http://localhost:8888"
+# Load environment variables from .env file
+load_dotenv(os.path.join(PROJECT_ROOT, ".env"))
 
-os.environ["ASR_SERVICE_ENDPOINT"] = "http://kube-whisperer.default.74.224.102.71.nip.io"
-os.environ["TRANSLATION_SERVICE_ENDPOINT"] = "http://translation-service.default.74.224.102.71.nip.io"
-os.environ["TTS_SERVICE_ENDPOINT"] = "http://vox-raga.default.74.224.102.71.nip.io"
+# Get service endpoints from environment variables
+# Will use values from .env file or existing environment variables
+asr_endpoint = os.environ.get("ASR_SERVICE_ENDPOINT", "http://kube-whisperer.default.74.224.102.71.nip.io")
+translation_endpoint = os.environ.get("TRANSLATION_SERVICE_ENDPOINT", "http://translation-service.default.74.224.102.71.nip.io")
+tts_endpoint = os.environ.get("TTS_SERVICE_ENDPOINT", "http://vox-raga.default.74.224.102.71.nip.io")
+
+print(f"Using ASR endpoint: {asr_endpoint}")
+print(f"Using Translation endpoint: {translation_endpoint}")
+print(f"Using TTS endpoint: {tts_endpoint}")
+
+# Add environment variables for service endpoints
+os.environ["ASR_SERVICE_ENDPOINT"] = asr_endpoint
+os.environ["TRANSLATION_SERVICE_ENDPOINT"] = translation_endpoint
+os.environ["TTS_SERVICE_ENDPOINT"] = tts_endpoint
 
 # Import after setting environment variables
 from src.config import get_settings, get_pipeline_config

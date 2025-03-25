@@ -6,7 +6,7 @@ metadata:
   labels:
     app: neural-babel
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: neural-babel
@@ -17,39 +17,24 @@ spec:
     spec:
       containers:
       - name: neural-babel
-        image: ${REGISTRY_URL}/neural-babel:${IMAGE_TAG}
+        image: ${REGISTRY_URL}/neural-babel:latest
         imagePullPolicy: Always
         env:
-        - name: ASR_SERVICE_NAME
+        - name: ASR_SERVICE_ENDPOINT
           valueFrom:
             configMapKeyRef:
               name: neural-babel-config
-              key: asr_service_name
-        - name: ASR_SERVICE_NAMESPACE
+              key: asr_service_endpoint
+        - name: TRANSLATION_SERVICE_ENDPOINT
           valueFrom:
             configMapKeyRef:
               name: neural-babel-config
-              key: asr_service_namespace
-        - name: TRANSLATION_SERVICE_NAME
+              key: translation_service_endpoint
+        - name: TTS_SERVICE_ENDPOINT
           valueFrom:
             configMapKeyRef:
               name: neural-babel-config
-              key: translation_service_name
-        - name: TRANSLATION_SERVICE_NAMESPACE
-          valueFrom:
-            configMapKeyRef:
-              name: neural-babel-config
-              key: translation_service_namespace
-        - name: TTS_SERVICE_NAME
-          valueFrom:
-            configMapKeyRef:
-              name: neural-babel-config
-              key: tts_service_name
-        - name: TTS_SERVICE_NAMESPACE
-          valueFrom:
-            configMapKeyRef:
-              name: neural-babel-config
-              key: tts_service_namespace
+              key: tts_service_endpoint
         - name: DEFAULT_SOURCE_LANG
           valueFrom:
             configMapKeyRef:
@@ -71,10 +56,10 @@ spec:
         resources:
           limits:
             cpu: "1"
-            memory: 2Gi
+            memory: 1Gi
           requests:
             cpu: "500m"
-            memory: 1Gi
+            memory: 512Mi
         readinessProbe:
           httpGet:
             path: /ready

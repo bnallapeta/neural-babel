@@ -9,6 +9,7 @@ NeuralBabel is a comprehensive speech-to-speech translation system that integrat
 - **Multiple Language Support**: Support for multiple language pairs
 - **API-First Design**: RESTful API for easy integration with other applications
 - **Kubernetes Ready**: Deployment configurations for Kubernetes
+- **KServe Integration**: Works with KServe InferenceServices for ML model serving
 
 ## Project Structure
 
@@ -33,7 +34,11 @@ neural-babel/
 ### Prerequisites
 
 1. Python 3.9+
-2. Virtual environment (recommended)
+2. Virtual environment (required)
+3. Access to KServe InferenceServices:
+   - kube-whisperer (ASR)
+   - translation-service (Translation)
+   - vox-raga (TTS)
 
 ### Setup
 
@@ -51,37 +56,42 @@ neural-babel/
 
 3. Install dependencies:
    ```bash
-   pip install -r requirements.txt
+   venv/bin/pip install -r requirements.txt
+   ```
+
+4. Configure service endpoints in `.env` file:
+   ```
+   # Service endpoints (KServe InferenceServices)
+   ASR_SERVICE_ENDPOINT=http://kube-whisperer.default.74.224.102.71.nip.io
+   TRANSLATION_SERVICE_ENDPOINT=http://translation-service.default.74.224.102.71.nip.io
+   TTS_SERVICE_ENDPOINT=http://vox-raga.default.74.224.102.71.nip.io
+   
+   # Default languages
+   DEFAULT_SOURCE_LANG=en
+   DEFAULT_TARGET_LANG=fr
+   
+   # Application configuration
+   LOG_LEVEL=INFO
+   PORT=8005
    ```
 
 ### Running the Services
 
-NeuralBabel requires three component services:
-
-1. ASR Service (Kube-Whisperer)
-2. Translation Service (Lexi-Shift)
-3. TTS Service (Vox-Raga)
-
-These services are running at the following endpoints:
-- ASR: http://kube-whisperer.default.<external-ip>.nip.io
-- Translation: http://translation-service.default.<external-ip>.nip.io
-- TTS: http://vox-raga.default.<external-ip>.nip.io
-
-*Note that nip.io is a free service that provides a way to access services running on a local machine from the internet. The external-ip is the IP address of the machine running the services. For a production environment, you would need to deploy the services to a cloud provider and use the public IP address of the services.*
-
 To run the NeuralBabel orchestrator:
 
 ```bash
-python -m src.main
+venv/bin/python -m src.main
 ```
+
+This will start the service at http://localhost:8005
 
 ### Testing the Pipeline
 
 To test the complete speech-to-speech translation pipeline:
 
 ```bash
-# Run the test script
-./scripts/testing/run_test.sh
+# Run the test script (makes sure your virtual environment is activated)
+source venv/bin/activate && ./scripts/testing/run_test.sh
 ```
 
 This script will:
@@ -112,14 +122,52 @@ curl -X POST \
 - Languages: `curl -s http://localhost:8005/languages`
 - Configuration: `curl -s http://localhost:8005/config`
 
-## Deployment
+## Deployment to Kubernetes
 
-NeuralBabel can be deployed to Kubernetes using the provided configurations:
+NeuralBabel is designed to work with KServe InferenceServices for the ASR, Translation, and TTS components.
+
+### 1. Build and Push Docker Image
 
 ```bash
-# Build the Docker image
-docker build -t neural-babel:latest .
+# Build the image
+docker build -t your-registry/neural-babel:latest .
 
-# Deploy to Kubernetes
-kubectl apply -f k8s/
+# Push to your registry
+docker push your-registry/neural-babel:latest
+```
+
+### 2. Update Kubernetes Deployment
+
+Edit the `k8s/deployment.yaml` file to use your image:
+
+```yaml
+image: your-registry/neural-babel:latest
+```
+
+### 3. Deploy to Kubernetes
+
+```bash
+# Set your KUBECONFIG if needed
+export KUBECONFIG=/path/to/your/kubeconfig
+
+# Apply ConfigMap with service endpoints
+kubectl apply -f k8s/configmap.yaml
+
+# Apply Deployment, Service, and Ingress resources
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
+kubectl apply -f k8s/ingress.yaml
+```
+
+### 4. Verify Deployment
+
+```bash
+# Check pods
+kubectl get pods -l app=neural-babel
+
+# Check service
+kubectl get svc neural-babel
+
+# Check ingress
+kubectl get ingress neural-babel-ingress
 ```
