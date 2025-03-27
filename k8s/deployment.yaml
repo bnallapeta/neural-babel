@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: neural-babel
-        image: bnracr.azurecr.io/neural-babel:0.0.1 
+        image: ghcr.io/bnallapeta/neural-babel:0.0.1
         imagePullPolicy: IfNotPresent
         env:
         - name: ASR_SERVICE_ENDPOINT
