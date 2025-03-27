@@ -1,63 +1,100 @@
 #!/bin/bash
 
-# Set the service URL - replace with your actual ingress address
+# Set service URL
 SERVICE_URL="http://neural-babel.default.74.224.102.71.nip.io"
 
-# Get current directory
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+# Colors for output
+BLUE='\033[0;34m'
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+GRAY='\033[0;90m'
+NC='\033[0m' # No Color
 
-# Check if sample1.wav exists, if not try to use test_audio.wav
-if [ ! -f "$PROJECT_ROOT/audio/sample1.wav" ]; then
-    if [ -f "$PROJECT_ROOT/audio/test_audio.wav" ]; then
-        echo "Using test_audio.wav as sample1.wav..."
-        cp "$PROJECT_ROOT/audio/test_audio.wav" "$PROJECT_ROOT/audio/sample1.wav"
-    elif [ -f "$PROJECT_ROOT/test_audio.wav" ]; then
-        echo "Using test_audio.wav from project root..."
-        cp "$PROJECT_ROOT/test_audio.wav" "$PROJECT_ROOT/audio/sample1.wav"
-    else
-        echo "No test audio file found. Please create one first."
-        exit 1
-    fi
-fi
+# Spinner animation
+spinner() {
+    local pid=$1
+    local delay=0.1
+    local spinstr='|/-\'
+    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
+        local temp=${spinstr#?}
+        printf "\r[%c] %s" "$spinstr" "$2"
+        local spinstr=$temp${spinstr%"$temp"}
+        sleep $delay
+    done
+    printf "\r   \r"
+}
 
-# Check if the service is healthy
+# Function to print formatted text
+print_text() {
+    echo -e "\n${BLUE}=== $1 ===${NC}"
+}
+
+# Function to print success message
+print_success() {
+    echo -e "${GREEN}✓ $1${NC}"
+}
+
+# Function to print error message
+print_error() {
+    echo -e "${RED}✗ $1${NC}"
+}
+
+# Initialize Neural Babel Translation Pipeline
+print_text "Initializing Neural Babel Translation Pipeline"
+
+# Check service health
 echo "Checking service health..."
-HEALTH_RESPONSE=$(curl -s $SERVICE_URL/health)
-echo "Health check response: $HEALTH_RESPONSE"
-
-# Get supported languages
-echo -e "\nGetting supported languages..."
-curl -s $SERVICE_URL/languages | jq . 2>/dev/null || echo "Failed to get languages or jq not installed"
-
-# Translate an audio file
-echo -e "\nTranslating audio file..."
-curl -X POST \
-  -F "audio=@$PROJECT_ROOT/audio/sample1.wav" \
-  -F "source_lang=en" \
-  -F "target_lang=fr" \
-  -F "audio_format=wav" \
-  -F "voice=default" \
-  $SERVICE_URL/translate \
-  -o $PROJECT_ROOT/audio/deployed_translation.wav
-
-echo -e "\nTranslation complete. Output saved to $PROJECT_ROOT/audio/deployed_translation.wav"
-
-# Play the translated audio if possible
-if command -v afplay &> /dev/null; then
-  echo -e "\nPlaying translated audio..."
-  afplay $PROJECT_ROOT/deployed_translation.wav
-elif command -v aplay &> /dev/null; then
-  echo -e "\nPlaying translated audio..."
-  aplay $PROJECT_ROOT/deployed_translation.wav
+if curl -s "$SERVICE_URL/health" | grep -q "status\":\"ok"; then
+    print_success "Service is healthy"
 else
-  echo -e "\nNo audio player found. Please listen to deployed_translation.wav manually."
+    print_error "Service is not healthy"
+    exit 1
 fi
 
-echo -e "\nTest complete!"
+# Get available language pairs
+echo -e "\nAvailable language pairs:"
+curl -s "$SERVICE_URL/languages" | jq -r '.language_pairs[] | "• \(.source_name) → \(.target_name)"'
 
-# If anything went wrong, check the pod logs
-echo -e "\nTo view service logs, use the following commands:"
-echo "export KUBECONFIG=\"$KUBECONFIG\""
-echo "POD_NAME=\$(kubectl get pods -l app=neural-babel -o jsonpath=\"{.items[0].metadata.name}\")"
-echo "kubectl logs \$POD_NAME" 
+# Start translation process
+print_text "Starting Translation Process"
+
+# Check if input audio file exists
+INPUT_AUDIO="scripts/audio/sample1.wav"
+if [ ! -f "$INPUT_AUDIO" ]; then
+    print_error "Input audio file not found: $INPUT_AUDIO"
+    exit 1
+fi
+
+# Set source and target languages
+SOURCE_LANG="en"
+TARGET_LANG="fr"
+
+# Run the complete translation pipeline
+echo -e "\nRunning translation pipeline..."
+(curl -s -X POST "$SERVICE_URL/translate" \
+    -F "audio=@$INPUT_AUDIO" \
+    -F "source_lang=$SOURCE_LANG" \
+    -F "target_lang=$TARGET_LANG" \
+    -F "audio_format=wav" \
+    -F "voice=default" \
+    --output "scripts/audio/deployed_translation.wav") &
+spinner $! "Processing translation"
+
+# Check if the output file was created and has content
+if [ -f "scripts/audio/deployed_translation.wav" ] && [ -s "scripts/audio/deployed_translation.wav" ]; then
+    print_success "Translation completed successfully"
+    echo -e "\nOutput audio file saved to: scripts/audio/deployed_translation.wav"
+    
+    # Play the translated audio
+    echo -e "\nPlaying translated audio..."
+    afplay "scripts/audio/deployed_translation.wav"
+else
+    print_error "Translation failed. Please check the service logs."
+    exit 1
+fi
+
+# Print summary
+print_text "Translation Summary"
+echo "Source Language: English"
+echo "Target Language: French"
+print_success "Translation completed successfully"

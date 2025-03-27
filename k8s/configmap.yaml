@@ -6,7 +6,7 @@ metadata:
 data:
   # Service endpoints (using KServe InferenceService URLs)
   asr_service_endpoint: "http://kube-whisperer.default.74.224.102.71.nip.io"
-  translation_service_endpoint: "http://translation-service.default.74.224.102.71.nip.io"
+  translation_service_endpoint: "http://lexi-shift.default.74.224.102.71.nip.io"
   tts_service_endpoint: "http://vox-raga.default.74.224.102.71.nip.io"
   
   # Default settings
