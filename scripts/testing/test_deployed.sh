@@ -51,9 +51,9 @@ else
     exit 1
 fi
 
-# Get available language pairs
-echo -e "\nAvailable language pairs:"
-curl -s "$SERVICE_URL/languages" | jq -r '.language_pairs[] | "• \(.source_name) → \(.target_name)"'
+# # Get available language pairs
+# echo -e "\nAvailable language pairs:"
+# curl -s "$SERVICE_URL/languages" | jq -r '.language_pairs[] | "• \(.source_name) → \(.target_name)"'
 
 # Start translation process
 print_text "Starting Translation Process"
