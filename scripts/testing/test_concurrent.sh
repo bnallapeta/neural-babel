@@ -8,6 +8,7 @@ BLUE='\033[0;34m'
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 GRAY='\033[0;90m'
+YELLOW='\033[0;33m'
 NC='\033[0m' # No Color
 
 # Function to print formatted text
@@ -23,6 +24,11 @@ print_success() {
 # Function to print error message
 print_error() {
     echo -e "${RED}✗ $1${NC}"
+}
+
+# Function to print timestamp
+timestamp() {
+    echo -e "${YELLOW}[$(date '+%H:%M:%S')]${NC} $1"
 }
 
 # Make the script executable
@@ -51,11 +57,17 @@ TARGET_LANG="fr"
 # Create directory for output files
 mkdir -p scripts/audio/concurrent_test
 
-print_text "Starting concurrent request test (15 requests with 3-second intervals)"
+print_text "Starting serial request test (30 requests with 2-second intervals)"
+timestamp "Test started"
 
-# Send 15 requests with 3-second gaps
-for i in {1..15}; do
-    echo -e "\nSending request $i of 15..."
+# Configuration
+TOTAL_REQUESTS=30
+REQUEST_DELAY=2  # seconds between requests
+
+# Send requests serially (without waiting for completion)
+success_count=0
+for ((i=1; i<=TOTAL_REQUESTS; i++)); do
+    timestamp "Sending request $i of $TOTAL_REQUESTS..."
     
     # Send the request in the background
     curl -s -X POST "$SERVICE_URL/translate" \
@@ -68,20 +80,21 @@ for i in {1..15}; do
     
     print_success "Request $i sent"
     
-    # Wait 3 seconds before next request
-    if [ $i -lt 15 ]; then
-        echo "Waiting 3 seconds before next request..."
-        sleep 3
+    # Wait before next request (if not the last one)
+    if [ $i -lt $TOTAL_REQUESTS ]; then
+        timestamp "Waiting $REQUEST_DELAY seconds before next request..."
+        sleep $REQUEST_DELAY
     fi
 done
 
-print_text "Waiting for all requests to complete..."
+timestamp "All requests sent, waiting for completion..."
 wait
+timestamp "All requests completed processing"
 
 # Check results
 print_text "Results"
 success_count=0
-for i in {1..15}; do
+for i in $(seq 1 $TOTAL_REQUESTS); do
     if [ -f "scripts/audio/concurrent_test/translation_$i.wav" ] && [ -s "scripts/audio/concurrent_test/translation_$i.wav" ]; then
         print_success "Request $i completed successfully"
         ((success_count++))
@@ -91,11 +104,14 @@ for i in {1..15}; do
 done
 
 print_text "Summary"
-echo "Total requests: 15"
+timestamp "Test finished"
+echo "Total requests: $TOTAL_REQUESTS"
 echo "Successful requests: $success_count"
+echo "Delay between requests: $REQUEST_DELAY seconds"
 
-if [ $success_count -eq 15 ]; then
+if [ $success_count -eq $TOTAL_REQUESTS ]; then
     print_success "All requests completed successfully"
 else
-    print_error "Some requests failed. KServe scaling might need investigation."
+    print_error "Some requests failed ($((TOTAL_REQUESTS-success_count)) failures)"
+    print_error "KServe scaling might need investigation."
 fi 
